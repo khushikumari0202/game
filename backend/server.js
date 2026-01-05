@@ -3,10 +3,17 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
+const Leaderboard = require('./models/Leaderboard');
+
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+
+const connectDB = require('./config/db');
+connectDB();
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -22,7 +29,6 @@ const CONNECT_N = 4;
 const activeGames = new Map();   // gameId -> Game
 const waitingQueue = [];         // { username, socketId }
 const sessions = new Map();      // username -> { socketId, gameId }
-const leaderboard = new Map();   // username -> wins
 
 /* ---------------- GAME CLASS ---------------- */
 class Game {
@@ -193,7 +199,7 @@ io.on('connection', socket => {
   });
 
   /* ---------- MAKE MOVE ---------- */
-  socket.on('make_move', ({ gameId, column }) => {
+  socket.on('make_move', async ({ gameId, column }) => {
     const username = socket.data.username;
     const session = sessions.get(username);
     if (!session || session.gameId !== gameId) return;
@@ -237,11 +243,12 @@ io.on('connection', socket => {
       // ✅ 1. Update leaderboard using USERNAME
         if (game.winner !== 'draw') {
           const winnerUsername = game.players[`p${game.winner}`].username;
-          leaderboard.set(
-          winnerUsername,
-          (leaderboard.get(winnerUsername) || 0) + 1
-        );
-      }
+          await Leaderboard.findOneAndUpdate(
+            {username: winnerUsername},
+            {$inc: {wins: 1}},
+            {upsert: true}
+          )
+        }
 
     // ✅ 2. Send PLAYER NUMBER to clients
       const winnerPlayer = game.winner === 'draw' ? 0 : game.winner;
@@ -314,14 +321,20 @@ io.on('connection', socket => {
 });
 
 /* ---------------- LEADERBOARD API ---------------- */
-app.get('/api/leaderboard', (req, res) => {
-  const top = [...leaderboard.entries()]
-    .map(([username, wins]) => ({ username, wins }))
-    .sort((a, b) => b.wins - a.wins)
-    .slice(0, 10);
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const players = await Leaderboard
+      .find({})
+      .sort({ wins: -1 })
+      .limit(10)
+      .select('username wins -_id');
 
-  res.json({ players: top });
+    res.json({ players });
+  } catch (err) {
+    res.status(500).json({ error: 'Leaderboard fetch failed' });
+  }
 });
+
 
 /* ---------------- START SERVER ---------------- */
 server.listen(3001, () => {
