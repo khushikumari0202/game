@@ -19,8 +19,12 @@ const connectDB = require('./config/db');
 connectDB();
 
 const server = http.createServer(app);
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL?.replace(/\/$/, "")
+];
 const io = new Server(server, {
-  cors: { origin: process.env.FRONTEND_URL, methods: ["GET", "POST"], credentials: true }
+  cors: { origin: allowedOrigins, methods: ["GET", "POST"], credentials: true }
 });
 
 /* ---------------- CONSTANTS ---------------- */
