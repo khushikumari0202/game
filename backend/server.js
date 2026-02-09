@@ -113,12 +113,40 @@ class Game {
 
 /* ---------------- BOT AI (SIMPLE) ---------------- */
 function botMove(game) {
+
+  // helper: simulate drop
+  function canWin(player, col) {
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (game.board[r][col] === 0) {
+        game.board[r][col] = player;
+        const win = game.checkWin(player);
+        game.board[r][col] = 0;
+        return win;
+      }
+    }
+    return false;
+  }
+
+  // valid columns
   const valid = [];
   for (let c = 0; c < COLS; c++) {
     if (game.board[0][c] === 0) valid.push(c);
   }
+
+  // 1️⃣ try winning move
+  for (let c of valid) {
+    if (canWin(2, c)) return c;
+  }
+
+  // 2️⃣ block opponent
+  for (let c of valid) {
+    if (canWin(1, c)) return c;
+  }
+
+  // 3️⃣ random
   return valid[Math.floor(Math.random() * valid.length)];
 }
+
 /*----------------------TIMER------------------- */
 function startTurnTimer(game) {
   clearTimeout(game.turnTimer);
