@@ -337,6 +337,8 @@ app.get('/api/leaderboard', async (req, res) => {
 
 
 /* ---------------- START SERVER ---------------- */
-server.listen(3001, () => {
-  console.log('🚀 Server running at http://localhost:3001');
-});
+// server.listen(3001, () => {
+//   console.log('🚀 Server running at http://localhost:3001');
+// });
+
+module.exports = app;
