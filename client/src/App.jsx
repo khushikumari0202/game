@@ -4,7 +4,7 @@ import GameBoard from './GameBoard.jsx';
 import QueueScreen from './QueueScreen.jsx';
 import Leaderboard from './Leaderboard.jsx';
 
-const SOCKET_SERVER = 'http://localhost:3001';
+const SOCKET_SERVER = 'https://game-backend-nwpt.onrender.com';
 
 function App() {
   const [screen, setScreen] = useState('username');
@@ -40,10 +40,10 @@ function App() {
     return () => clearInterval(interval);
   }, [gameState?.gameId, gameState?.currentTurn, gameState?.timeLeft]);
 
-
+  const API_BASE = "https://game-backend-nwpt.onrender.com";
   const fetchLeaderboard = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/leaderboard');
+      const res = await fetch(`${API_BASE}/api/leaderboard`);
       const data = await res.json();
       setLeaderboard(data.players || []);
     } catch (e) {
