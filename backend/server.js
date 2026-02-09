@@ -17,7 +17,7 @@ connectDB();
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "http://localhost:3000", methods: ["GET", "POST"] }
+  cors: { origin: process.env.FRONTEND_URL || "http://localhost:3000", methods: ["GET", "POST"] }
 });
 
 /* ---------------- CONSTANTS ---------------- */
@@ -335,10 +335,7 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
-
-/* ---------------- START SERVER ---------------- */
-// server.listen(3001, () => {
-//   console.log('🚀 Server running at http://localhost:3001');
-// });
-
-module.exports = app;
+const PORT = process.env.PORT || 3001; 
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
