@@ -13,7 +13,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Game backend running successfully 🚀");
 });
-
+//redeployment test
 
 const connectDB = require('./config/db');
 connectDB();
